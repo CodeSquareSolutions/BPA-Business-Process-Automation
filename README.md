@@ -3,40 +3,63 @@ Business Process Automation is application which automate your business process 
 your developer from doing basic work. This Application automaticaly generate the Angular2-4 application. 
 Tool and Technologies uses in this application :
 
-EJS 
-
+EJS
 Node.js
-
 Express
-
 Angular 2-4
-Red-Node 
-Snap-svg 
-Step for setting the application are : 
+Red-Node
+Snap-svg
+
+Step for setting the application are:
+
 Getting start with BPA
+
 Step 1: App generation
+
 Create loopback app with api-server or empty server. 
+
 Step 2: Data Source & Models
+
 Create data source and loopback models 
+
 Step 3: Configure the server app
+
 •	Loopback sdk: npm install --save @mean-expert/{loopback-sdk-builder,loopback-component-realtime}
+
 •	Editing server/server.js: app.start = function() {
+
     // start the web server
+    
     var server = app.listen(function() {
+    
         app.emit('started', server);
+	
         var baseUrl = app.get('url').replace(/\/$/, '');
+	
         console.log('Web server listening at: %s', baseUrl);
+	
         if (app.get('loopback-component-explorer')) {
+	
             var explorerPath = app.get('loopback-component-explorer').mountPath;
+	    
             console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
+	    
         }
+	
     });
+    
     return server;
+    
 };
+
 •	Editing server/component-config.json: {
+
     "loopback-component-explorer": {
+    
         "mountPath": "/explorer"
+	
     },
+    
     "@mean-expert/loopback-component-realtime": {
         "debug": false,
         "auth": true
