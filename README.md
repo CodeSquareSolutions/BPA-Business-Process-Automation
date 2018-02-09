@@ -64,46 +64,87 @@ Step 3: Configure the server app
         "debug": false,
         "auth": true
     }
+    
 }
+
 •	SDK Builder: Edit package.json
+
   "scripts": {
+  
         
         "build:sdk": "./node_modules/.bin/lb-sdk server/server ./client/ng2app/src/app/shared/sdk"
+	
     },
-•	install dependency: 
+    
+•	install dependency:
+
 "body-parser": "^1.18.0",
+
 "ejs": "^2.5.7",
+
    	"express.js": "^1.0.0",
+	
     	"fs": "0.0.1-security",
+	
     	"fs-extra": "^4.0.2",
+	
 	"mkdirp": "^0.5.1",
+	
 •	Putting files on server side:
+
 extendExpressApi.js and expressApi.js.
+
 •	Running extendExpressApi.js:
+
 Command node extendExpressApi.js 
+
 •	Run server now
 
+
 Step 4: Client side App
+
 •	Putting Template:
+
 Putting templates files/folder in client/
+
 o	App-Templates
+
 o	E2e-Templates
+
 o	Cli-Templates
+
 o	Components-Templates
+
 o	Components-Listing-Template
+
 o	Pages-templates
+
 o	Index.js
+
 o	Ejs.min.js
+
 o	Setting
+
 ♣	Package.json
+
 ♣	Scripts
+
 ♣	Styles
+
 ♣	Template
+
 Step 5: Setting 
+
 •	Npm install
+
 •	Npm node setting.js:
+
 This will generate setting application.
+
 Step 6: Cleint App
+
 •	Generate angular 2 app
+
 •	Cd to ng2app and install dependencies
+
 
