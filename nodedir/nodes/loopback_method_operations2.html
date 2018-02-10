@@ -1,0 +1,51 @@
+<script type="text/javascript">
+    RED.nodes.registerType('lb_method_operation2',{
+        category: 'Lb_Operations',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"lb method operations2"},
+            model: {value:""},
+            verb: {value:""},
+            object_id: {value:""}
+        },
+        inputs:1,
+        outputs:2,
+        icon: "file.png",
+        label: function() {
+            return this.name||"lb_method_operation2";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="lb_method_operation2">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i>Name</label>
+        <input type="text" id="node-input-name" placeholder="name"></br></br>
+        <label for="node-input-model"><i class="icon-tag"></i> Model : </label>
+        <input type="text" id="node-input-model" placeholder="model"></br></br>
+        <label for="node-input-verb"><i class="icon-tag"></i> Verb : </label>        
+        <select id="node-input-verb">
+            <option value="create">create</option>
+            <option value="find">find</option>
+            <option value="findById">findById</option>
+            <option value="deleteById">deleteById</option>
+            <option value="updateById">updateById</option>
+          </select></br></br>
+        <label for="node-input-object_id"><i class="icon-tag"></i> ID : </label>
+        <input type="text" id="node-input-object_id" placeholder="id">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="lb_method_operation2">
+    <p>This node provide a facility to access to loopback model operations of your application e.g.(create ,find ,updateById , deleteById). <br />
+    Input fields are model name ,verb , object_id and data.<br />
+    Model name and verb are compulsorywhile objecy_id and data are used when required.<br />
+    e.g. <br />
+    model = "leave";<br />
+    verb = "create";<br />
+    <br />
+    Data injected from previous node in an object like 
+    msg.data = {data};
+    <br />
+    </p>
+</script>

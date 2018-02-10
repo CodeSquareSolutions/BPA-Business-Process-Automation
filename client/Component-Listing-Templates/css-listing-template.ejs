@@ -1,0 +1,27 @@
+<% hasMany = [];
+for (var count = 0 ;count < lb_relation.length ; count++){
+ lb_relation[count].name =  lb_relation[count].name.charAt(0).toUpperCase() +  lb_relation[count].name.slice(1); 
+ lb_relation[count].relations.model =  lb_relation[count].relations.model.charAt(0).toUpperCase() +  lb_relation[count].relations.model.slice(1);
+}
+for (var count = 0 ;count < lb_relation.length ; count++){ 
+             if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasMany"){
+              hasMany.push(lb_relation[count]);
+            } 
+}
+
+if (hasMany.length> 0){%>
+.selected {
+    border: solid lightskyblue 1px;
+    border-radius: 7px;
+    float: left;
+    margin: 2px;
+    padding: 2px 15px;
+}
+
+.selected a {
+    color: red;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: bold;
+}
+<%}%>

@@ -1,0 +1,442 @@
+
+<div *ngFor="let alert of alerts">
+    <alert [type]="alert.type" [dismissOnTimeout]="alert.timeout">{{ alert.msg }}</alert>
+</div>
+<% var belongsTo = [] , hasMany = [] ,hasAndBelongsToMany = [], hasManyThrough = [], import_Models = [], rel = false, prop = [] , hasManyProp =[];
+import_Models.push(model.name);
+for (var count = 0 ;count < lb_relation.length ; count++){
+ lb_relation[count].name =  lb_relation[count].name.charAt(0).toUpperCase() +  lb_relation[count].name.slice(1); 
+ lb_relation[count].relations.model =  lb_relation[count].relations.model.charAt(0).toUpperCase() +  lb_relation[count].relations.model.slice(1);
+}
+
+for (var count = 0 ;count < lb_relation.length ; count++){
+  if (model.name == lb_relation[count].name && (lb_relation[count].relations.type == "belongsTo" || lb_relation[count].relations.type == "hasOne")){
+    belongsTo.push(lb_relation[count]);
+    rel = false;
+    for (var check =0 ;check< import_Models.length ; check++)
+      if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+    if (!rel) import_Models.push(lb_relation[count].relations.model);
+  } 
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasMany"  && !("through" in lb_relation[count].relations)){
+    hasMany.push(lb_relation[count]);
+    rel = false;
+    for (var check =0 ;check< import_Models.length ; check++)
+      if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+    if (!rel) import_Models.push(lb_relation[count].relations.model);
+  }
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasMany"  && ("through" in lb_relation[count].relations)){
+    for (var k=0;k < relation_schema.length ; k++){
+      for (var counter =0 ; counter< relation_schema[k].relations.length ;counter++){
+        if (relation_schema[k].modelName == model.name.toLowerCase() && relation_schema[k].relations[counter].modelName == lb_relation[count].relations.through){
+          for (var x=0;x < relation_schema.length ; x++){
+            if (relation_schema[x].modelName == lb_relation[count].relations.through && relation_schema[x].operations.createOperation == false){
+            hasManyThrough.push(lb_relation[count]);
+            rel = false;
+            for (var check =0 ;check< import_Models.length ; check++)
+              if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+            if (!rel) import_Models.push(lb_relation[count].relations.model);
+            }        
+          }
+        }
+      }   
+    }
+  } 
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasAndBelongsToMany"){
+    for (var k=0;k < relation_schema.length ; k++){
+      for (var x=0;x < relation_schema[k].relations.length ; x++){
+        if (relation_schema[k].modelName == model.name.toLowerCase() && relation_schema[k].relations[x].modelName == lb_relation[count].name.toLowerCase() + lb_relation[count].relations.model.toLowerCase()){
+          hasAndBelongsToMany.push(lb_relation[count]);
+          rel = false;
+          for (var check =0 ;check< import_Models.length ; check++)
+            if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+          if (!rel) import_Models.push(lb_relation[count].relations.model);
+        }
+      }   
+    }  
+  }
+}
+  for (var j = 0 ;j< belongsTo.length ; j++){
+    for (var i = 0 ;i< model_schema.length ; i++){
+    if (belongsTo[j].relations.model.toLowerCase() == model_schema[i].name.toLowerCase() ) {prop.push(Object.keys(model_schema[i].properties)[0]);break;}
+  }}
+  for(var i=0; i < hasMany.length ; i++){
+    for (var j = 0 ;j< model_schema.length ; j++){
+      if (hasMany[i].relations.model.toLowerCase() == model_schema[j].name.toLowerCase() ) {hasManyProp.push(Object.keys(model_schema[j].properties)[0]);break;}
+}};%>
+
+<div><% if (belongsTo.length ==0 && hasMany.length == 0 && hasAndBelongsToMany.length == 0 && hasManyThrough.length == 0 ){%>
+  <div class="card card-accent-warning">
+    <div class="card-header">
+      <strong> <%= model.name %></strong> Form
+      <div class="card-actions">
+        <a  href="/components" class="btn-close"><i class="icon-close"></i></a>
+      </div>
+  </div>
+  <div class="card-block">
+    <form class="form-horizontal">
+      <div class="container"><%for (let test in model.properties){if (!model.properties.hasOwnProperty(test)) continue; var models = model.properties[test];%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+          <div class="col-md-10">
+            <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%>  [(ngModel)]="<%= model.name.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>" />
+          </div>
+        </div><%}%>
+      </div>
+    </form>
+  </div>
+  <div class="card-footer">
+    <button type="submit"  (click)="add<%= model.name %>()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+  </div><%};if (belongsTo.length > 0 && hasMany.length==0 && hasAndBelongsToMany.length ==0 && hasManyThrough.length == 0){%>
+  <div class="card card-accent-warning">
+    <div class="card-header">
+      <strong> <%= model.name %></strong> Form
+        <div class="card-actions">
+          <a href="/components"  class="btn-close"><i class="icon-close"></i></a>
+    </div>
+  </div>
+  
+  <div class="card-block">
+    <form  class="form-horizontal"><%for (var count = 0 ;count < belongsTo.length ; count++){%>
+      <div class="form-group row">
+        <label class="col-md-2 form-control-label" for="<%if(belongsTo[count].relations.foreignKey == ''){%><%= belongsTo[count].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[count].relations.foreignKey %><%}%>"><%if(belongsTo[count].relations.foreignKey == ''){%><%= belongsTo[count].relations.model.toUpperCase()%><%}else {%><%= belongsTo[count].relations.foreignKey %><%}%></label>
+        <div class="col-md-10">
+          <select id="<%if(belongsTo[count].relations.foreignKey == ''){%><%= belongsTo[count].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[count].relations.foreignKey %><%}%>" [(ngModel)]="<%=model.name.toLowerCase()%>.<%if(belongsTo[count].relations.foreignKey == ''){%><%= belongsTo[count].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[count].relations.foreignKey %><%}%>" name="<%=model.name.toLowerCase()%>" class="form-control form-control-lg">
+            <option *ngFor="let list of <%= belongsTo[count].relations.model.toLowerCase() %>s"  [ngValue]="list.id" >{{list.<%= prop[count]%>}}</option>
+          </select>
+        </div>
+      </div><br /><%} for (let test in model.properties){if (!model.properties.hasOwnProperty(test)) continue; var models = model.properties[test];%>
+              
+      <div class="form-group row">
+        <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+        <div class="col-md-10">
+          <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= (model.name).toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>" />
+        </div>
+      </div><%} %>
+    </form>
+  </div>
+  <div class="card-footer">
+    <button type="submit" (click)="add<%= model.name %>()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+  </div><%}; if (hasMany.length > 0 && hasAndBelongsToMany.length ==0 && hasManyThrough.length ==0){%>
+  <div class="card card-accent-warning">
+    <div class="card-header">
+      <strong> <%= model.name %></strong> Form
+      <div class="card-actions">
+        <a href="/components"  class="btn-close"><i class="icon-close"></i></a>
+      </div>
+    </div>
+    <div class="card-block">
+      <form class="form-horizontal" ><%for (var x=0;x< belongsTo.length ; x++){%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>"><%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toUpperCase()%><%}else {%><%= belongsTo[x].relations.foreignKey %><%}%></label>
+          <div class="col-md-10">
+            <select id="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" [(ngModel)]="<%=model.name.toLowerCase()%>.<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" name="<%=model.name.toLowerCase()%>" class="form-control form-control-lg">
+              <option *ngFor="let list of <%= belongsTo[x].relations.model.toLowerCase() %>s"  [ngValue]="list.id">{{list.<%= prop[x]%>}}</option>
+            </select>
+          </div>
+        </div>
+        <br /><%} for (let test in model.properties){if (!model.properties.hasOwnProperty(test)) continue; var models = model.properties[test];%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+          <div class="col-md-10">
+            <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%>  [(ngModel)]="<%= model.name.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+          </div>
+        </div><%}  for (var count=0; count< hasMany.length ; count++){%>   
+        <div class="container ">
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i>  <strong>  <%= hasMany[count].relations.model %>s </strong>
+            </div>
+          </div>
+          <div class="card-block">
+            <table class="table table-bordered">
+              <thead>
+                <tr><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){%>
+                  <th><%= test.toUpperCase() %></th><%}}}%>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let list of <%= hasMany[count].relations.model.toLowerCase() %>Array "><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue; var models=model_schema[i].properties[test];%>
+                  <td>{{list.<%= test %>}}</td><%}}}%>
+                  <td  ><span class="badge badge-danger" ><i (click)="remove<%= hasMany[count].relations.model %>(<%= hasMany[count].relations.model.toLowerCase() %>)"  class="fa fa-trash-o"></i></span></td>
+                </tr>
+              </tbody>                 
+            </table>
+          </div>
+          <div class="card-footer">
+            <button  type="button"  class="btn btn-success" (click)="modal<%= hasMany[count].relations.model.toLowerCase() %>.show()">Add</button>
+          </div>
+        </div><%}%>
+      </form>
+    </div>
+    <div class="card-footer">
+      <button type="submit" (click)="create<%= hasMany[0].name%>s()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+    </div> 
+  </div><%}; if (hasManyThrough.length > 0 && hasAndBelongsToMany.length ==0){%>
+  <div class="container">
+    <div class="card card-accent-warning">
+      <div class="card-header">
+        <strong> <%= model.name %></strong> Form
+        <div class="card-actions">
+          <a href="/components"  class="btn-close"><i class="icon-close"></i></a>
+        </div>  
+      </div>
+    </div>    
+    <div class="card-block">
+      <form class="form-horizontal" ><%for (var x=0;x< belongsTo.length ; x++){%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>"><%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toUpperCase()%><%}else {%><%= belongsTo[x].relations.foreignKey %><%}%></label>
+          <div class="col-md-10">
+            <select id="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" [(ngModel)]="<%=model.name.toLowerCase()%>.<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" name="<%=model.name.toLowerCase()%>" class="form-control form-control-lg">
+              <option *ngFor="let list of <%= belongsTo[x].relations.model.toLowerCase() %>s"  [ngValue]="list.id">{{list.<%= prop[x]%>}}</option>
+            </select>
+          </div>
+        </div>
+        <br /><%}; for (let test in model.properties){if (!model.properties.hasOwnProperty(test)) continue; var models = model.properties[test];%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+          <div class="col-md-10">
+            <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= model.name.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+          </div>
+        </div><%}%>
+        <br /><% for (var count=0; count< hasMany.length ; count++){%>   
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <i class="fa fa-align-justify"></i>  <strong>  <%= hasMany[count].relations.model %>s </strong>
+              </div>
+            </div>
+            <div class="card-block">
+              <table class="table table-bordered">
+                <thead>
+                  <tr><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){%>
+                    <th><%= test.toUpperCase() %></th><%}}}%>
+                    <th>Remove</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let list of <%= hasMany[count].relations.model.toLowerCase() %>Array "><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue; var models=model_schema[i].properties[test];%>
+                    <td>{{list.<%= test %>}}</td><%}}}%>
+                    <td  ><span class="badge badge-danger" ><i (click)="remove<%= hasMany[count].relations.model %>HasManyInThrough(<%= hasMany[count].relations.model.toLowerCase() %>)"  class="fa fa-trash-o"></i></span></td>
+                  </tr>
+                </tbody>                 
+              </table>
+            </div>
+            <div class="card-footer">
+              <button  type="button"  class="btn btn-success" (click)="modal<%= hasMany[count].relations.model.toLowerCase() %>.show()">Add</button>
+            </div>
+          </div><%}%>
+          <br /><% for (var count=0 ;count < hasManyThrough.length ; count++){%>
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i><strong><%= hasManyThrough[count].relations.model%></strong>
+            </div>
+            <div class="card-block">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                <input type="text" name="inputName" #inputName<%=count %> (keyup)=" <%= hasManyThrough[count].relations.model %>filtering(inputName<%=count %>.value)" class="form-control" placeholder="Search">
+              </div>
+              <br />
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th># ID</th><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasManyThrough[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                    <th><%= test%></th><%}}}%>
+                    <th>select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let <%= hasManyThrough[count].relations.model.toLowerCase()%> of filter<%= hasManyThrough[count].relations.model %> let i=index">
+                    <td>{{<%= hasManyThrough[count].relations.model.toLowerCase()%>.id}}</td><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasManyThrough[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                    <td>{{<%= hasManyThrough[count].relations.model.toLowerCase()%>.<%= test%>}}</td><%}}}%>
+                    <td><input type="checkbox" class="checkBox" (change)="select<%= hasManyThrough[count].relations.model %>s($event , <%= hasManyThrough[count].relations.model.toLowerCase()%>.id)" name="chk" [(ngModel)]="checked<%= hasManyThrough[count].relations.model %>[i]"/></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i><strong><%= hasManyThrough[count].relations.through.charAt(0).toUpperCase() + hasManyThrough[count].relations.through.slice(1).toLowerCase(); %></strong>
+            </div>
+            <div class="card-block"><%for (var x=0 ; x< relation_schema.length ; x++){for (var z=0 ; z< relation_schema[x].relations.length ; z++){if (relation_schema[x].relations[z].modelName == hasManyThrough[count].relations.through.toLowerCase()){for (var y=0 ;y < model_schema.length ; y++){if (model_schema[y].name.toLowerCase() == hasManyThrough[count].relations.through.toLowerCase()){;for (let test in model_schema[y].properties){if (! model_schema[y].properties.hasOwnProperty(test)) continue; var models = model_schema[y].properties[test];%>
+              <div class="form-group row">
+                <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+                <div class="col-md-10">
+                  <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= hasManyThrough[count].relations.through.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+                </div>
+            </div><%}}}}}}%>
+          </div> 
+        </div><%}%>
+      </form>
+    </div>
+    <div class="card-footer">
+      <button type="submit" (click)="create<%= hasManyThrough[0].name %>()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+    </div> 
+  </div><%} if( hasAndBelongsToMany.length > 0 ){%>
+  <div class="container">
+    <div class="card card-accent-warning">
+      <div class="card-header">
+        <strong> <%= model.name %></strong> Form
+        <div class="card-actions">
+          <a  href="/components"  class="btn-close"><i class="icon-close"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="card-block">
+      <form class="form-horizontal" ><%for (var x=0;x< belongsTo.length ; x++){%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>"><%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toUpperCase()%><%}else {%><%= belongsTo[x].relations.foreignKey %><%}%></label>
+          <div class="col-md-10">
+            <select id="<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" [(ngModel)]="<%=model.name.toLowerCase()%>.<%if(belongsTo[x].relations.foreignKey == ''){%><%= belongsTo[x].relations.model.toLowerCase()%>Id<%}else {%><%= belongsTo[x].relations.foreignKey %><%}%>" name="<%=model.name.toLowerCase()%>" class="form-control form-control-lg">
+              <option *ngFor="let list of <%= belongsTo[x].relations.model.toLowerCase() %>s"  [ngValue]="list.id">{{list.<%= prop[x]%>}}</option>
+            </select>
+          </div>
+        </div>
+        <br /><%}; for (let test in model.properties){if (!model.properties.hasOwnProperty(test)) continue; var models = model.properties[test];%>
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+          <div class="col-md-10">
+            <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= model.name.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+          </div>
+        </div>
+        <br /><%}; for (var count=0; count< hasMany.length ; count++){%>   
+        <div class="">
+          <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i>  <strong>  <%= hasMany[count].relations.model %>s </strong>
+            </div>
+          </div>
+          <div class="card-block">
+            <table class="table table-bordered">
+              <thead>
+                <tr><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){%>
+                  <th><%= test.toUpperCase() %></th><%}}}%>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let list of <%= hasMany[count].relations.model.toLowerCase() %>Array "><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue; var models=model_schema[i].properties[test];%>
+                  <td>{{list.<%= test %>}}</td><%}}}%>
+                  <td  ><span class="badge badge-danger" ><i (click)="remove<%= hasMany[count].relations.model %>HasManyInBelongsTo(<%= hasMany[count].relations.model.toLowerCase() %>)"  class="fa fa-trash-o"></i></span></td>
+                </tr>
+              </tbody>                 
+            </table>
+          </div>
+          <div class="card-footer">
+            <button  type="button"  class="btn btn-success" (click)="modal<%= hasMany[count].relations.model.toLowerCase() %>.show()">Add</button>
+          </div>
+        </div>
+        <br /><%}; for (var count=0 ;count < hasManyThrough.length ; count++){%>
+        <div class="card">
+          <div class="card-header">
+            <i class="fa fa-align-justify"></i>   <strong><%= hasManyThrough[count].relations.model%></strong>
+          </div>
+          <div class="card-block">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-search"></i></span>
+              <input as type="text" name="inputName" #inputName<%=count %> (keyup)=" <%= hasManyThrough[count].relations.model %>filtering(inputName<%=count %>.value)" class="form-control" placeholder="Search">
+            </div>
+            <br />
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th># ID</th><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasManyThrough[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                  <th><%= test%></th><%}}}%>
+                  <th>select</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let <%= hasManyThrough[count].relations.model.toLowerCase()%> of filter<%= hasManyThrough[count].relations.model %> let i=index">
+                  <td>{{<%= hasManyThrough[count].relations.model.toLowerCase()%>.id}}</td><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasManyThrough[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                  <td>{{<%= hasManyThrough[count].relations.model.toLowerCase()%>.<%= test%>}}</td><%}}}%>
+                  <td><input type="checkbox" class="checkBox" (change)="select<%= hasManyThrough[count].relations.model %>s($event , <%= hasManyThrough[count].relations.model.toLowerCase()%>.id)" name="chk" [(ngModel)]="checked<%= hasManyThrough[count].relations.model %>[i]"/></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <i class="fa fa-align-justify"></i><strong><%= hasManyThrough[count].relations.through.charAt(0).toUpperCase() + hasManyThrough[count].relations.through.slice(1).toLowerCase(); %></strong>
+          </div>
+          <div class="card-block"><%for (var x=0 ; x< relation_schema.length ; x++){for (var z=0 ; z< relation_schema[x].relations.length ; z++){if (relation_schema[x].relations[z].modelName == hasManyThrough[count].relations.through.toLowerCase()){for (var y=0 ;y < model_schema.length ; y++){if (model_schema[y].name.toLowerCase() == hasManyThrough[count].relations.through.toLowerCase()){;for (let test in model_schema[y].properties){if (! model_schema[y].properties.hasOwnProperty(test)) continue; var models = model_schema[y].properties[test];%>
+            <div class="form-group row">
+              <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+              <div class="col-md-10">
+                <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%> id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= hasManyThrough[count].relations.through.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+              </div>
+            </div><%}}}}}}%>
+          </div>
+        </div><%}%>
+        <br /><% for (var count=0 ;count < hasAndBelongsToMany.length ; count++){%>
+        <div class="card">
+          <div class="card-header">
+            <i class="fa fa-align-justify"></i>   <strong><%= hasAndBelongsToMany[count].relations.model%></strong>
+          </div>
+          <div class="card-block">
+            <div class="input-group">
+              <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                <input type="text" name="inputName" #inputName<%=count %> (keyup)=" <%= hasAndBelongsToMany[count].relations.model %>filtering(inputName<%=count %>.value)" class="form-control" placeholder="Search">
+            </div> <br />
+            <table class="table table-bordered">
+              <br />
+              <thead>
+                <tr>
+                  <th># ID</th><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasAndBelongsToMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                  <th><%= test%></th><%}}}%>
+                  <th>select</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let <%= hasAndBelongsToMany[count].relations.model.toLowerCase()%> of filter<%= hasAndBelongsToMany[count].relations.model %> let i=index">
+                  <td>{{<%= hasAndBelongsToMany[count].relations.model.toLowerCase()%>.id}}</td><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasAndBelongsToMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue;%>
+                  <td>{{<%= hasAndBelongsToMany[count].relations.model.toLowerCase()%>.<%= test%>}}</td><%}}}%>
+                  <td><input type="checkbox" class="checkBox" (change)="select<%= hasAndBelongsToMany[count].relations.model %>s($event , <%= hasAndBelongsToMany[count].relations.model.toLowerCase()%>.id)" name="chk" [(ngModel)]="checked<%= hasAndBelongsToMany[count].relations.model %>[i]"/></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div><%}%>
+      </form>  
+    </div>
+    <div class="card-footer">
+      <button type="submit" (click)="create<%= hasAndBelongsToMany[0].name %>()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+    </div>
+  </div><%} for (var count=0; count< hasMany.length ; count++){%>
+  <!--modal for <%= hasMany[count].relations.model.toLowerCase()%> relations-->
+  <div bsModal #modal<%= hasMany[count].relations.model.toLowerCase()%>="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-success" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><strong><%= model.name %></strong> Info Add</h4>
+          <button type="button" class="close" (click)="modal<%= hasMany[count].relations.model.toLowerCase()%>.hide()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i>   <strong><%= hasMany[count].relations.model %>s </strong>
+            </div>
+            <div class="card-block">
+              <form class="form-horizontal"><%for (var i=0; i< model_schema.length; i++){ if (model_schema[i].name.toLowerCase() == hasMany[count].relations.model.toLowerCase()){for (let test in model_schema[i].properties){if (! model_schema[i].properties.hasOwnProperty(test)) continue; var models=model_schema[i].properties[test];%>
+                <div class="form-group row">
+                  <label class="col-md-2 form-control-label" for="<%= test.toLowerCase()%>"><%if (models.label == undefined || models.label == ''){%><%= test.toUpperCase() %><%} else {%><%= models.label %><%}%></label>
+                  <div class="col-md-10">
+                    <input class="form-control" type="<%= models.type%>" <%if (models.min != undefined && models.min != '' && models.type !='date'){%>min='<%= models.min%>'<%}%> <%if (models.max != undefined && models.max != '' && models.type !='date' ){%>max='<%= models.max%>'<%}%> <%if (models.title != undefined && models.title != ''){%>title='<%= models.title%>'<%}%> <%if (models.pattern != undefined && models.pattern != '' && models.type=='email'){%>pattern='<%= models.pattern%>'<%}%>  id="<%= test.toLowerCase() %>" name="<%=test.toLowerCase()%>" <%if (models.hasOwnProperty("required")){ if (models.required == true){%>required<%}}%> [(ngModel)]="<%= model_schema[i].name.toLowerCase()%>.<%= test%>" placeholder="<%if (models.placeholder == undefined || models.placeholder == ''){%><%= test.toUpperCase() %><%} else {%><%= models.placeholder %><%}%>">
+                  </div>
+                </div><%}}}%>
+                <br />
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="modal<%= hasMany[count].relations.model.toLowerCase()%>.hide()">Close</button>
+          <button type="button" class="btn btn-success"  (click)="modal<%= hasMany[count].relations.model.toLowerCase()%>.hide()" (click)="add<%= hasMany[count].relations.model %>HasManyInThrough()">Add</button>
+        </div>
+      </div>
+    <!-- /.modal-content -->
+    </div>
+  </div>
+  <!-- /.modal-dialog --><%}%>
+</div>

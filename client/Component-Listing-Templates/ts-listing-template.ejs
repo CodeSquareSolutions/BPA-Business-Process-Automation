@@ -1,0 +1,310 @@
+<% 
+var belongsTo = [] , hasMany = [] , hasManyThrough = [], hasAndBelongsToMany = [], import_Models = [], rel = false;test = 0;
+var hasManyImportApi = [] ,hasManyThroughImportApi = [] ,hasAndBelongsToManyImportApi = [];
+
+import_Models.push(model.name);
+for (var count = 0 ;count < lb_relation.length ; count++){
+ lb_relation[count].name =  lb_relation[count].name.charAt(0).toUpperCase() +  lb_relation[count].name.slice(1); 
+ lb_relation[count].relations.model =  lb_relation[count].relations.model.charAt(0).toUpperCase() +  lb_relation[count].relations.model.slice(1);
+}
+
+for (var count = 0 ;count < lb_relation.length ; count++){
+  if (model.name == lb_relation[count].name && (lb_relation[count].relations.type == "belongsTo" || lb_relation[count].relations.type == "hasOne")){
+    belongsTo.push(lb_relation[count]);
+    rel = false;
+    for (var check =0 ;check< import_Models.length ; check++)
+      if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+    if (!rel) import_Models.push(lb_relation[count].relations.model);
+  } 
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasMany"  && !("through" in lb_relation[count].relations)){
+    hasMany.push(lb_relation[count]);
+    rel = false;
+    for (var check =0 ;check< import_Models.length ; check++)
+      if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+    if (!rel) import_Models.push(lb_relation[count].relations.model);
+    for (var check =0 ;check< hasManyThroughImportApi.length ; check++)
+      if (hasManyThroughImportApi[check] == model.name)  rel = true;
+    for (var check =0 ;check< hasAndBelongsToManyImportApi.length ; check++)
+      if (hasAndBelongsToManyImportApi[check] == model.name)  rel = true;
+    for (var check =0 ;check< hasManyImportApi.length ; check++)
+      if (hasManyImportApi[check] == model.name)  rel = true;
+    if (!rel) hasManyImportApi.push(model.name);
+  } 
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasMany"  && ("through" in lb_relation[count].relations)){  
+    for (var k=0;k < relation_schema.length ; k++){
+      for (var counter =0 ; counter< relation_schema[k].relations.length ;counter++){
+        if (relation_schema[k].modelName == model.name.toLowerCase() && relation_schema[k].relations[counter].modelName == lb_relation[count].relations.through){
+          for (var x=0;x < relation_schema.length ; x++){
+            if (relation_schema[x].modelName == lb_relation[count].relations.through && relation_schema[x].operations.createOperation == false){
+              hasManyThrough.push(lb_relation[count]);
+              rel = false;
+              for (var check =0 ;check< import_Models.length ; check++)
+                if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+              if (!rel) import_Models.push(lb_relation[count].relations.model);
+              for (var check =0 ;check< hasManyThroughImportApi.length ; check++)
+                if (hasManyThroughImportApi[check] == model.name)  rel = true;
+              for (var check=0 ;check< hasManyImportApi.length ; check++ )
+                if (hasManyImportApi[check] == model.name)  rel = true;
+              if (!rel) hasManyThroughImportApi.push(model.name);
+            }        
+          }
+        }
+      }   
+    }
+  } 
+  if (model.name == lb_relation[count].name && lb_relation[count].relations.type == "hasAndBelongsToMany"){
+    for (var k=0;k < relation_schema.length ; k++){
+      for (var x=0;x < relation_schema[k].relations.length ; x++){
+        if (relation_schema[k].modelName == model.name.toLowerCase() && relation_schema[k].relations[x].modelName == lb_relation[count].name.toLowerCase() + lb_relation[count].relations.model.toLowerCase()){
+          hasAndBelongsToMany.push(lb_relation[count]);
+          rel = false;
+          for (var check =0 ;check< import_Models.length ; check++)
+            if (import_Models[check] == lb_relation[count].relations.model)  rel = true;
+          if (!rel) import_Models.push(lb_relation[count].relations.model);
+          for (var check =0 ;check< hasAndBelongsToManyImportApi.length ; check++)
+            if (hasAndBelongsToManyImportApi[check] == model.name)  rel = true;
+          for (var check=0 ;check< hasManyImportApi.length ; check++ )
+            if (hasManyImportApi[check] == model.name)  rel = true;
+          for (var check=0 ;check< hasManyThroughImportApi.length ; check++ )
+            if (hasManyThroughImportApi[check] == model.name)  rel = true;
+          if (!rel) hasAndBelongsToManyImportApi.push(model.name);
+        }
+      }   
+    }
+  }
+}%> 
+import { Component ,OnInit } from '@angular/core';
+import {  <% if(import_Models.length  > 0){ for (var count = 0 ;count < import_Models.length ; count++) {%> <%= import_Models[count] %> ,<%}}%> FireLoopRef } from 'app/shared/sdk/models';
+<%test = 0 ;for(var i =0 ; i< lb_relation.length;i++){if((model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany")|| (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && (lb_relation[i].relations.type=="belongsTo" || lb_relation[i].relations.type=="hasOne"))){test = test+1}} if (test > 0){%>import { ActivatedRoute } from '@angular/router';<%}%>
+import { <% for (var count = 0 ;count < hasManyImportApi.length ; count++) {%> <%= hasManyImportApi[count] %>Api ,<%}for (var i = 0 ;i < hasAndBelongsToManyImportApi.length ; i++) {%><%= hasAndBelongsToManyImportApi[i] %>Api ,<%}; for (var count = 0 ;count < hasManyThroughImportApi.length ; count++) {%><%= hasManyThroughImportApi[count] %>Api ,<%}%> } from 'app/shared/sdk/services';
+import { RealTime } from 'app/shared/sdk/services';
+import { Observable } from 'rxjs/Observable';
+import { UserApi } from './../../shared/sdk/services/custom/User';
+
+@Component({
+  selector: 'app-<%=model.name%>Listing',
+  templateUrl: './<%=model.name%>.listing.component.html',
+  styleUrls: ['./<%=model.name%>.listing.component.css']
+})
+export class  <%=model.name%>ComponentListing  implements OnInit{
+ private accessToken : any ;
+ private <%= model.name.toLowerCase() %> : <%=model.name%> = new <%= model.name %>();
+ private <%= model.name.toLowerCase() %>s: <%=model.name%>[] = new Array <<%= model.name %>>();
+ private <%= model.name.toLowerCase() %>Ref : FireLoopRef<<%= model.name %>>;
+
+ <%for (var i=0 ;i< belongsTo.length ; i++){%>
+  private <%= belongsTo[i].relations.model.toLowerCase() %>s : <%= belongsTo[i].relations.model %>[] = new Array<<%= belongsTo[i].relations.model %>>();
+  private <%= belongsTo[i].relations.model.toLowerCase() %>Ref : FireLoopRef<<%= belongsTo[i].relations.model %>>;
+<%} for (var i=0 ;i< hasMany.length ; i++){%>
+  private <%= hasMany[i].relations.model.toLowerCase() %>Array = new Array< any >();
+  private <%= hasMany[i].relations.model.toLowerCase() %> : <%= hasMany[i].relations.model %>= new <%= hasMany[i].relations.model %>();
+<%} for (var i=0 ;i< hasAndBelongsToMany.length ; i++){%>
+  private <%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s: <%= hasAndBelongsToMany[i].relations.model %>[]  = new Array< <%= hasAndBelongsToMany[i].relations.model %> >();
+  private <%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>Ref: FireLoopRef < <%= hasAndBelongsToMany[i].relations.model %> > ;
+  private <%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s = Array<any>();
+  private filter<%= hasAndBelongsToMany[i].relations.model %> : <%= hasAndBelongsToMany[i].relations.model %>[] = new Array();
+  private checked<%= hasAndBelongsToMany[i].relations.model %>  = new Array< any >();
+  <%}%>
+  public alerts: any = [];
+  public successModal;
+  public dangerModal;<%test = 0;for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){test = test+1;%>
+  <%= lb_relation[i].name.toLowerCase()%>Id: number;<%}if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && (lb_relation[i].relations.type=="belongsTo" || lb_relation[i].relations.type=="hasOne")){test = test+1;}} if (test > 0){%>
+  private rel_Id: number;
+  private modelName;
+  private sub: any;<%}%>
+  public deleteObj;
+  
+  constructor(
+    private rt: RealTime ,private userApi: UserApi
+    <%test = 0 ;for(var i =0 ; i< lb_relation.length;i++){if((model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany")|| (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo") || (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasOne")){ test = test+1;}} if (test >0){%>
+    ,private route: ActivatedRoute <%}%>
+    <% for (var count = 0 ;count < hasManyImportApi.length ; count++) {%>, private <%= hasManyImportApi[count].toLowerCase() %>Api: <%= hasManyImportApi[count] %>Api <%} for (var count = 0 ;count < hasAndBelongsToManyImportApi.length ; count++) {%>, private <%= hasAndBelongsToManyImportApi[count].toLowerCase() %>Api: <%= hasAndBelongsToManyImportApi[count] %>Api <%}for (var count = 0 ;count < hasManyThroughImportApi.length ; count++) {%>, private <%= hasManyThroughImportApi[count].toLowerCase() %>Api: <%= hasManyThroughImportApi[count] %>Api <%}%>
+    ) {
+    <%for (var i=0 ;i< hasMany.length ; i++){%>this.<%= hasMany[i].relations.model.toLowerCase() %>Array = [];<%}%>
+    this.rt.onReady().subscribe(() => {
+    this.accessToken = this.userApi.getCurrentToken();
+    this.<%=model.name.toLowerCase() %>Ref = this.rt.FireLoop.ref<<%=model.name%>>(<%=model.name%>);<%test= 0;for(var i =0 ; i< lb_relation.length;i++){if((model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany")|| (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo") || (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasOne")){test = test+1;}}%>
+    this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= ""){%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%};if (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && (lb_relation[i].relations.type=="belongsTo" || lb_relation[i].relations.type=="hasOne")){%>id : this.rel_Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s);
+    <%for (var i=0 ;i< belongsTo.length ; i++){%>
+    this.<%= belongsTo[i].relations.model.toLowerCase() %>Ref = this.rt.FireLoop.ref<<%= belongsTo[i].relations.model %>>(<%= belongsTo[i].relations.model %>);
+    this.<%= belongsTo[i].relations.model.toLowerCase() %>Ref.on('change',{order: 'id ASC'}).subscribe((<%= belongsTo[i].relations.model.toLowerCase() %>: <%= belongsTo[i].relations.model %>[]) => this.<%= belongsTo[i].relations.model.toLowerCase() %>s = <%= belongsTo[i].relations.model.toLowerCase() %>);
+    <%} for (var i=0 ;i< hasAndBelongsToMany.length ; i++){%>
+    this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>Ref = this.rt.FireLoop.ref < <%= hasAndBelongsToMany[i].relations.model%> > (<%= hasAndBelongsToMany[i].relations.model%>);
+    this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>Ref.on('change',{order: 'id ASC'}).subscribe((<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s: <%= hasAndBelongsToMany[i].relations.model%>[]) => this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s = this.filter<%= hasAndBelongsToMany[i].relations.model %> =  <%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s);
+    <%}%>
+    });
+  }
+  ngOnInit() {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){%>
+    this.sub = this.route.params.subscribe(params => {
+      this.modelName = params["modelName"];
+        if (params['<%= lb_relation[i].name.toLowerCase()%>Id'] == undefined || this.modelName.toLowerCase() != "<%= lb_relation[i].name.toLowerCase()%>" ){ this.<%= lb_relation[i].name.toLowerCase()%>Id = undefined;}// (+) converts string 'id' to a number
+        else if (params['<%= lb_relation[i].name.toLowerCase()%>Id'] != undefined && this.modelName.toLowerCase() == "<%= lb_relation[i].name.toLowerCase()%>"){this.<%= lb_relation[i].name.toLowerCase()%>Id = +params['<%= lb_relation[i].name.toLowerCase()%>Id'];}
+      });<%}}%>
+      <%for(var i =0 ; i< lb_relation.length;i++){
+      if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && (lb_relation[i].relations.type=="belongsTo" || lb_relation[i].relations.type=="hasOne")){%>
+      this.sub = this.route.params.subscribe(params => {
+        if (params['<%= lb_relation[i].relations.model.toLowerCase()%>Id'] == undefined ){ this.rel_Id = undefined;}// (+) converts string 'id' to a number
+        else if (params['<%= lb_relation[i].relations.model.toLowerCase()%>Id'] != undefined ){this.rel_Id = +params['<%= lb_relation[i].relations.model.toLowerCase()%>Id'];}
+      });<%}}%>
+  }
+
+public errorHandling(error){
+    if(error.error = "401 Unauthorized Event"){
+      this.alertDanager();
+    }
+    else 
+    console.log(error.error);
+  }
+
+  
+  public alertDanager(): void {
+    this.alerts.push({
+      type: 'danger',
+      msg: `Opps...!! Sorry ! Your are Unauthorized role for this operation.`,
+      timeout: 5000
+    });
+  }
+
+  public delete(obj) : void {
+    this.deleteObj = obj;
+  }
+  remove(<%=model.name.toLowerCase()%>: <%=model.name%>): void {
+    this.<%=model.name.toLowerCase() %>Ref.remove(<%=model.name.toLowerCase()%>).subscribe(() => this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC'}).subscribe((<%= model.name.toLowerCase() %> : <%= model.name %>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>));
+  }
+  
+ public addAlert(): void {
+   this.remove(this.deleteObj);
+    this.alerts.push({
+      type: 'success',
+      msg: `Successfully deleted`,
+      timeout: 5000
+    });
+  }
+<% if (belongsTo.length == 0 && hasMany.length == 0 && hasAndBelongsToMany.length ==0 ){%> 
+  update<%= model.name %>() : void{
+  this.<%= model.name.toLowerCase() %>Ref.upsert(this.<%= model.name.toLowerCase() %>).subscribe(() => this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= ""){%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s));
+  for(var i in this.<%= model.name.toLowerCase()%>) { this.<%= model.name.toLowerCase()%>[i] = ""};
+  }
+  update(<%= model.name.toLowerCase() %>): void {
+    this.<%= model.name.toLowerCase() %> = <%= model.name.toLowerCase() %>;
+  }
+  <%}; if (belongsTo.length > 0  && hasMany.length == 0 && hasAndBelongsToMany.length ==0){%> 
+  update<%= model.name %>() : void{
+  this.<%= model.name.toLowerCase() %>Ref.upsert(this.<%= model.name.toLowerCase() %>).subscribe(() => this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= ""){%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%} if (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo"){%>id : this.rel_Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s));
+  for(var i in this.<%= model.name.toLowerCase()%>) { this.<%= model.name.toLowerCase()%>[i] = ""};
+  }
+  update(<%= model.name.toLowerCase() %>): void {
+    this.<%= model.name.toLowerCase() %> = <%= model.name.toLowerCase() %>;
+  }<%}; if (hasMany.length > 0 && hasAndBelongsToMany.length ==0 ){ %>
+  update<%= hasMany[0].name%>s(): void {<% for (var i=0 ;i< hasMany.length ; i++){%>
+    this.<%= model.name.toLowerCase() %>Api.delete<%= hasMany[i].relations.model %>(this.<%= model.name.toLowerCase() %>.id).subscribe((error)=> this.errorHandling(error));    <%}%>
+    this.<%= model.name.toLowerCase() %>Ref.upsert(this.<%= model.name.toLowerCase() %>).subscribe(( <%= model.name.toLowerCase() %> :  <%= model.name %>) => this.createRelations(<%= model.name.toLowerCase()%>),(error)=> this.errorHandling(error));
+    for(var i in this.<%= model.name.toLowerCase()%>) { this.<%= model.name.toLowerCase()%>[i] = ""};
+  }
+  <% for (var i=0 ;i< hasMany.length ; i++){%>
+  add<%= hasMany[i].relations.model %>() {<%var properties= new Array();for (var k=0; k< model_schema.length; k++){ if (model_schema[k].name.toLowerCase() == hasMany[i].relations.model.toLowerCase()){for (let test in model_schema[k].properties){if (! model_schema[k].properties.hasOwnProperty(test)) continue; properties.push(test)}}}%>
+    var temp = {<% for (var index =0 ; index< properties.length ; index++){%>'<%=properties[index]%>':this.<%= hasMany[i].relations.model.toLowerCase() %>.<%=properties[index]%>,<%}%>};
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array.push(temp);
+    for(var i in this.<%= hasMany[i].relations.model.toLowerCase()%>) { this.<%= hasMany[i].relations.model.toLowerCase()%>[i] = ""};
+  }
+
+  remove<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>) {
+    let index = this.<%= hasMany[i].relations.model.toLowerCase() %>Array.indexOf(<%= hasMany[i].relations.model.toLowerCase() %>);
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array.splice(index, 1);
+  }
+  <%}%>
+  createRelations( <%= model.name.toLowerCase() %>) : void { 
+    this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= ""){%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%} if (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo"){%>id : this.rel_Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s);<% for (var i=0 ; i< hasMany.length ; i++){%>
+    this.<%= hasMany[i].name.toLowerCase() %>Api.createMany<%= hasMany[i].relations.model%>(<%= model.name.toLowerCase() %>.id, this.<%= hasMany[i].relations.model.toLowerCase() %>Array).subscribe(() => this.<%= hasMany[i].relations.model.toLowerCase() %>Array = [],(error)=> this.errorHandling(error));<% } %>
+  }
+
+  update(<%= model.name.toLowerCase() %>) : void{
+    this.<%= model.name.toLowerCase() %> = <%= model.name.toLowerCase() %>;<% for (var i=0 ;i< hasMany.length ; i++){%>
+    this.<%= model.name.toLowerCase() %>Api.get<%= hasMany[i].relations.model %>( this.<%= model.name.toLowerCase() %>.id).subscribe((<%= hasMany[i].relations.model.toLowerCase() %> : <%= hasMany[i].relations.model%>) => this.initiateRel<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>),(error)=> this.errorHandling(error));<%}%>
+  }<% for (var i=0 ;i< hasMany.length ; i++){%>
+  initiateRel<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>): void {
+    var temp;
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array = [];    
+    for(var j in <%= hasMany[i].relations.model.toLowerCase() %>) { <%var properties= new Array();for (var k=0; k< model_schema.length; k++){ if (model_schema[k].name.toLowerCase() == hasMany[i].relations.model.toLowerCase()){for (let test in model_schema[k].properties){if (! model_schema[k].properties.hasOwnProperty(test)) continue; properties.push(test)}}}%>
+      temp = {<% for (var index =0 ; index< properties.length ; index++){%>'<%=properties[index]%>':<%= hasMany[i].relations.model.toLowerCase() %>[j].<%=properties[index]%>,<%}%>};
+      this.<%= hasMany[i].relations.model.toLowerCase() %>Array.push(temp);
+    };
+  }<%}};
+  if (hasAndBelongsToMany.length > 0 ){ if (hasMany.length > 0){%>
+  createRelationsHasMany( <%= model.name.toLowerCase() %>) : void { 
+    this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= ""){%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%} if (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo"){%>id : this.rel_Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s);<% for (var i=0 ; i< hasMany.length ; i++){%>
+    this.<%= hasMany[i].name.toLowerCase() %>Api.createMany<%= hasMany[i].relations.model %>(<%= model.name.toLowerCase() %>.id, this.<%= hasMany[i].relations.model.toLowerCase() %>Array).subscribe(() => this.<%= hasMany[i].relations.model.toLowerCase() %>Array = [],(error)=> this.errorHandling(error));<% } %>
+  }
+  <% for (var i=0 ;i< hasMany.length ; i++){%>
+  add<%= hasMany[i].relations.model %>() {<%var properties= new Array();for (var k=0; k< model_schema.length; k++){ if (model_schema[k].name.toLowerCase() == hasMany[i].relations.model.toLowerCase()){for (let test in model_schema[k].properties){if (! model_schema[k].properties.hasOwnProperty(test)) continue; properties.push(test)}}}%>
+    var temp = {<% for (var index =0 ; index< properties.length ; index++){%>'<%=properties[index]%>':this.<%= hasMany[i].relations.model.toLowerCase() %>.<%=properties[index]%>,<%}%>};
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array.push(temp);
+    for(var i in this.<%= hasMany[i].relations.model.toLowerCase()%>) { this.<%= hasMany[i].relations.model.toLowerCase()%>[i] = ""};
+  }
+
+  remove<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>) {
+    let index = this.<%= hasMany[i].relations.model.toLowerCase() %>Array.indexOf(<%= hasMany[i].relations.model.toLowerCase() %>);
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array.splice(index, 1);
+  }
+  initiateRel<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>): void {
+    var temp;
+    this.<%= hasMany[i].relations.model.toLowerCase() %>Array = [];    
+    for(var j in <%= hasMany[i].relations.model.toLowerCase() %>) { <%var properties= new Array();for (var k=0; k< model_schema.length; k++){ if (model_schema[k].name.toLowerCase() == hasMany[i].relations.model.toLowerCase()){for (let test in model_schema[k].properties){if (! model_schema[k].properties.hasOwnProperty(test)) continue; properties.push(test)}}}%>
+      temp = {<% for (var index =0 ; index< properties.length ; index++){%>'<%=properties[index]%>':<%= hasMany[i].relations.model.toLowerCase() %>[j].<%=properties[index]%>,<%}%>};
+      this.<%= hasMany[i].relations.model.toLowerCase() %>Array.push(temp);
+    };
+  }<%}}%>
+  update<%= hasAndBelongsToMany[0].name %>() : void{<% for (var i = 0 ; i < hasAndBelongsToMany.length ; i++){ %>
+    this.<%= model.name.toLowerCase()%>Api.delete<%= hasAndBelongsToMany[i].relations.model %>(this.<%= model.name.toLowerCase()%>.id).subscribe((error)=> this.errorHandling(error));<%}%>
+    this.<%= hasAndBelongsToMany[0].name.toLowerCase() %>Ref.upsert(this.<%= hasAndBelongsToMany[0].name.toLowerCase() %>).subscribe((<%= hasAndBelongsToMany[0].name.toLowerCase() %>: <%= hasAndBelongsToMany[0].name %>) => this.createRelations(<%= hasAndBelongsToMany[0].name.toLowerCase() %>),(error)=> this.errorHandling(error));
+  }
+  createRelations(<%= hasAndBelongsToMany[0].name.toLowerCase() %>): void {
+    this.<%=model.name.toLowerCase() %>Ref.on('change',{order: 'id ASC' <%if (test > 0){%>, where : {<%for(var i =0 ; i< lb_relation.length;i++){if(model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="hasMany"){if(lb_relation[i].relations.foreignKey!= "")
+    {%><%=lb_relation[i].relations.foreignKey%><%}else{%><%=lb_relation[i].name.toLowerCase()%>Id <%}%>: this.<%= lb_relation[i].name.toLowerCase()%>Id ,<%} if (model.name.toLowerCase()==lb_relation[i].relations.model.toLowerCase() && lb_relation[i].relations.type=="belongsTo"){%>id : this.rel_Id ,<%}}%>}<%}%>}).subscribe((<%= model.name.toLowerCase() %>s : <%=model.name%>[]) => this.<%= model.name.toLowerCase() %>s = <%= model.name.toLowerCase() %>s,(error)=> this.errorHandling(error));<% for (var i = 0 ; i < hasAndBelongsToMany.length ; i++){%>
+    this.add<%= hasAndBelongsToMany[i].relations.model %>To<%= hasAndBelongsToMany[i].name %>(<%= hasAndBelongsToMany[0].name.toLowerCase() %>);
+  <%} if (hasMany.length > 0){%>
+    this.createRelationsHasMany(<%= hasAndBelongsToMany[0].name.toLowerCase() %>);<%}%>
+  }
+  update(<%= model.name.toLowerCase()%>) :void {
+    this.<%= model.name.toLowerCase()%> = <%= model.name.toLowerCase()%>;<% for (var i = 0 ; i < hasAndBelongsToMany.length ; i++){ %>
+    this.<%= model.name.toLowerCase()%>Api.get<%= hasAndBelongsToMany[i].relations.model %>(this.<%= model.name.toLowerCase()%>.id).subscribe((<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %> : <%= hasAndBelongsToMany[i].relations.model %>) => this.initiateRel<%= hasAndBelongsToMany[i].relations.model %>(<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>),(error)=> this.errorHandling(error));<%}%>
+    <% if (hasMany.length > 0){ for (var i=0 ;i< hasMany.length ; i++){%>this.<%= model.name.toLowerCase() %>Api.get<%= hasMany[i].relations.model %>( this.<%= model.name.toLowerCase() %>.id).subscribe((<%= hasMany[i].relations.model.toLowerCase() %> : <%= hasMany[i].relations.model%>) => this.initiateRel<%= hasMany[i].relations.model %>(<%= hasMany[i].relations.model.toLowerCase() %>),(error)=> this.errorHandling(error));<%}}%>
+  }<% for (var i = 0 ; i < hasAndBelongsToMany.length ; i++){ %>
+  select<%= hasAndBelongsToMany[i].relations.model %>s(event , <%= hasAndBelongsToMany[i].relations.model %>Id):void{
+    if (event.target.checked) this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s.push(<%= hasAndBelongsToMany[i].relations.model %>Id);
+    else if(!event.target.checked) {
+      var index = this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s.indexOf(<%= hasAndBelongsToMany[i].relations.model %>Id);
+      this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s.splice(index, 1);
+    }
+  }
+
+  add<%= hasAndBelongsToMany[i].relations.model %>To<%= hasAndBelongsToMany[i].name %>(<%= hasAndBelongsToMany[i].name.toLowerCase() %>): void{
+    for (var i = 0; i< this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s.length ; i++)
+    this.<%= hasAndBelongsToMany[i].name.toLowerCase() %>Api.link<%= hasAndBelongsToMany[i].relations.model %>(<%= hasAndBelongsToMany[i].name.toLowerCase() %>.id ,this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s[i] , {} ).subscribe((error)=> this.errorHandling(error));
+    for(var chk in this.<%= model.name.toLowerCase()%>) { this.<%= model.name.toLowerCase()%>[chk] = ""};
+    this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s.forEach((<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %> , i) => {
+      this.checked<%= hasAndBelongsToMany[i].relations.model %>[i] = false;
+    })
+  }
+  <%= hasAndBelongsToMany[i].relations.model %>filtering(param){
+    this.filter<%= hasAndBelongsToMany[i].relations.model %>= [];
+    if(param != ""){
+          this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s.forEach(element => {
+              var prop = element[Object.keys(element)[0]];
+
+                if (typeof prop == 'string') {
+                      if (prop.indexOf(param) >= 0) this.filter<%= hasAndBelongsToMany[i].relations.model %>.push(element);
+                  }
+                  else {if (prop == param) this.filter<%= hasAndBelongsToMany[i].relations.model %>.push(element);}
+                });
+    }else{
+        this.filter<%= hasAndBelongsToMany[i].relations.model %> = this.<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>s;
+    }
+  }
+  initiateRel<%= hasAndBelongsToMany[i].relations.model %>(<%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>) : void{
+      this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s  = [];
+      for(var prop of <%= hasAndBelongsToMany[i].relations.model.toLowerCase() %>) {
+      this.<%= hasAndBelongsToMany[i].name.toLowerCase() %><%= hasAndBelongsToMany[i].relations.model %>s.push(prop.id);
+    }
+  }
+<%}}%>} 

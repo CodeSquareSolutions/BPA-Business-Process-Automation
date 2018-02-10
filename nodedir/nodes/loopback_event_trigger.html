@@ -1,0 +1,30 @@
+<script type="text/javascript">
+    RED.nodes.registerType('lb_event_trigger',{
+        category: 'Lb_Events',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"loopback Events"},
+            model: {value:""}
+        },
+        inputs:1,
+        outputs:2,
+        icon: "file.png",
+        label: function() {
+            return this.name||"lb_event_trigger";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="lb_event_trigger">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name :</label>
+        <input type="text" id="node-input-name" placeholder="Name"><br />
+        <label for="node-input-model"><i class="icon-tag"></i> Model : </label>
+        <input type="text" id="node-input-model" placeholder="model">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="lb_event_trigger">
+    <p>loopback 3.0 events is used in this node which allow to perform some action on when data set is created, deleted. <br />
+    it only takes model name and set a event listener on that model.</p>
+</script>

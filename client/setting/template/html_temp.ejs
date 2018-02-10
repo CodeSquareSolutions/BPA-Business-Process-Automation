@@ -1,0 +1,315 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="../node_modules/font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="../node_modules/animate.css/animate.min.css">
+    <link rel="stylesheet" href="../styles/index.css" />
+    <script type="text/javascript" src="../node_modules/snapsvg/dist/snap.svg.js"></script>
+    <script type="text/javascript" src="../node_modules/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="../node_modules/bootstrap/dist/js/bootstrap.js"></script>
+    <style>
+        .show {
+            -o-transition: opacity 3s;
+            -moz-transition: opacity 3s;
+            -webkit-transition: opacity 3s;
+            transition: opacity 3s;
+            opacity: 1;
+            background: lightskyblue;
+            font-size: 20px;
+            color: white;
+            border-radius: 7px;
+        }
+        
+        .mesgText {
+            padding-left: 400px;
+        }
+        
+        .hide {
+            opacity: 0;
+        }
+    </style>
+    <script>
+        function ShowSecond() {
+            var div2 = document.getElementById("div2");
+            div2.className = "show";
+            setTimeout(function() {
+                div2.className = "hide";
+            }, 3000);
+        }
+    </script>
+
+</head>
+
+<body>
+    <aside class="sideMenu">
+        <nav class="navbar navbar-default no-margin">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header fixed-brand">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" id="menu-toggle">
+                      <span class="glyphicon glyphicon-th-large" aria-hidden="true"></span>
+                    </button>
+                <a class="navbar-brand animated bounce" href="#"><i class="fa fa-window-restore "></i> Angular2 Application</a>
+            </div>
+            <!-- navbar-header-->
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="active"><button class="navbar-toggle collapse in" data-toggle="collapse" id="menu-toggle-2"> <span class="glyphicon glyphicon-th-large" aria-hidden="true"></span></button></li>
+                    <li style="float:right;top:10px; margin-left : 50px"><button class="btn btn-primary" onclick="createSchema(),ShowSecond()">Create Schema</button></li>
+                </ul>
+            </div>
+            <!-- bs-example-navbar-collapse-1 -->
+        </nav>
+        <div id="wrapper">
+            <!-- Sidebar -->
+            <div id="sidebar-wrapper">
+                <ul class="sidebar-nav nav-pills nav-stacked" id="menu"><% for (var i=0 ; i< model_schema.length ; i++){%>
+
+                    <li id="<%= model_schema[i].name.toLowerCase()%>Link"><!--class="active"-->
+                        <a href="#"><span class="fa-stack fa-lg pull-left"><i class="fa fa-window-restore fa-stack-1x "></i></span> <%= model_schema[i].name.toUpperCase()%></a>
+                    </li><%}%>
+                </ul>
+            </div>
+            <!-- /#sidebar-wrapper -->
+            <!-- Page Content -->
+            <div id="container">
+            <div id="navi">
+            <div id="page-content-wrapper">
+             <div id="div2" class="hide">
+                    <div id="textMesg" class="mesgText">
+                        Schema Successfully Created....!!
+                    </div>
+                </div>
+                <div class="container-fluid xyz">
+                    <div class="row">
+                        <div class="col-lg-12"><% for (var i=0 ; i< model_schema.length ; i++){%>
+                            <svg id="<%= model_schema[i].name.toLowerCase() %>" style="display:none" class="svg animated bounceInRight"></svg><%}%>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /#page-content-wrapper -->
+        </div>
+        <div id="infoi">
+            <div id="exTab2">
+                <ul class="nav nav-tabs">
+                    <li>
+                        <a onclick="hideInfoi()" data-toggle="tab"><i class="fa fa-arrow-right"></i> </a>
+                    </li>
+                    <li class="active">
+                        <a href="#1" data-toggle="tab">Properties</a>
+                    </li>
+                    <li><a href="#2" data-toggle="tab">Role</a>
+                    </li>
+                    <li><a href="#3" data-toggle="tab">ACL's</a>
+                    </li>
+                </ul>
+                <div class="tab-content ">
+                    <div class="tab-pane active" id="1">
+                        <div style="height: 50% ; overflow:scroll">
+                            <table id="propTable" class="table table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Filed Name</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div id="propertySetting" style="height: 40% ; display: none ;overflow:scroll">
+                            <h3 style="padding-left: 120px" id="propertySettingHeading"></h3>
+                            <div class="form-group row">
+                                <label class="col-md-4 form-control-label">Required Field</label>
+                                <div class="col-md-8">
+                                   <input id="modal_prop_required" type="checkbox" checked>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 form-control-label">Lable</label>
+                                 <div class="col-md-8">
+                                      <input type="text" id="modal_prop_label" class="form-control" placeholder="label">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-md-4 form-control-label">Change Type</label>
+                                <div class="col-md-8">
+                                    <select id="modal_prop_type" class="form-control">
+                                        <option>text</option>
+                                        <option>email</option>
+                                        <option>password</option>
+                                        <option>number</option>
+                                        <option>date</option>
+                                    </select>
+                                </div>
+                                </div>
+                                    <div class="form-group row">
+                                    <label class="col-md-4 form-control-label">Placeholder</label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="modal_prop_placeholder"class="form-control" placeholder="Placeholder">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-md-4 form-control-label">Pattern</label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="modal_prop_pattern" class="form-control" placeholder="Pattern">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-md-4 form-control-label">Min-Length</label>
+                                    <div class="col-md-8">
+                                        <input type="number" min="0" id="modal_prop_min" class="form-control" placeholder="Min-Length">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-md-4 form-control-label">Max-Length</label>
+                                    <div class="col-md-8">
+                                        <input type="number" min="0" id="modal_prop_max" class="form-control" placeholder="Max-Length">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-md-4 form-control-label">Title</label>
+                                    <div class="col-md-8">
+                                        <input type="text" id="modal_prop_title" class="form-control" placeholder="Title">
+                                    </div>
+                                </div>
+                                <button id="btn_saveProperties" onclick="saveProperties()" style="padding: 0px 10px 0px 10px" type="submit" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Save Properties</button>    
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="2">
+                        <div class="card ">
+                            <div class="card-header">
+                                <strong> Role</strong> Form
+                            </div>
+                            <div class="card-block">
+                                <form class="form-horizontal">
+                                    <div>
+                                        <div class="form-group row">
+                                            <label class="col-md-12 form-control-label" for="accountmgr">Role Name</label>
+                                            <div class="col-md-12">
+                                                <input class="form-control" type="string" id="roleName" placeholder="Role Name" />                                             
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-md-12 form-control-label" for="accountmgr">Role Description</label>
+                                            <div class="col-md-12">
+                                                <input class="form-control" type="string" id="roleDescription" placeholder="Role Description" />                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" onclick="addRole()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+                            </div>
+                            <hr>
+                                <div id="roleDetail">
+                                    <table id="roleTable" class="table table-hover table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Role Name</th>
+                                                <th>Role Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="3">
+                        <form class="form-horizontal">
+                            <div class="form-group row">
+                                <label class="col-md-12 form-control-label" for="accountmgr">Select Role</label>
+                                <div  class="col-md-12">
+                                    <select  id="aclSelectRole" class="form-control"></select>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="AclBody">
+                            <div>Please Select Methods for Permissions</div>
+                            <div class="checkbox">
+                                <label for="checkbox1">
+                                    <input type="checkbox" id="idView" name="checkbox1" value="option1"> View/Find
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label for="checkbox1">
+                                    <input type="checkbox" id="idAdd" name="checkbox1" value="option1"> Add/Create
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label for="checkbox1">
+                                    <input type="checkbox" id="idUpdate" name="checkbox1" value="option1"> Update
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label for="checkbox1">
+                                    <input type="checkbox" id="idDelete" name="checkbox1" value="option1"> Delete
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <label for="checkbox1">
+                                    <input type="checkbox" id="idRelations" name="checkbox1" value="option1"> Relation Operations
+                                </label>
+                            </div>
+                        </div>
+                        <div class="AclFooter">
+                            <button type="submit" id="rolePermissions" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Save Permissions</button>
+                        </div>
+                        <hr>
+                         <div id="DetailsOperation">
+                             <h3 style="padding-left: 135px"> Detail</h3>
+                             <div style="display: none" id="ViewDetails"> View/Find
+                                <div> Operations
+                                <ul>
+                                    <li>All Permission View and Searching</li>
+                                </ul>
+                                 </div>
+                                 <hr>
+                             </div>
+                             <div style="display: none" id="AddDetails"> Add/Create
+                                <div> Operations
+                                    <ul>
+                                        <li>All Permission for Add New Records</li>
+                                      </ul>
+                                </div>
+                                    <hr>
+                              </div>
+                              <div style="display: none" id="UpdateDetails"> Update
+                                 <div> Operations
+                                     <ul>
+                                         <li>All Permission for Update Records</li>
+                                      </ul>
+                                 </div>
+                                    <hr>
+                             </div>
+                            <div style="display: none" id="DeleteDetails"> Delete
+                                 <div> Operations
+                                   <ul>
+                                        <li>All Permission for Delete Records</li>
+                                    </ul>
+                                 </div>
+                            </div>
+                            <div style="display: none" id="RelationsDetails"> Relation 
+                                <div> Operations
+                                  <ul>
+                                       <li>All Permission for relation model object</li>
+                                   </ul>
+                                </div>
+                           </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </aside>
+
+    <footer class="footer">
+        <div class="footer-text">copyright &copy 2017</div>
+    </footer>
+    <script type="text/javascript" src="../scripts/index.js"></script>
+    <script type="text/javascript" src="../scripts/modals-svg.js"></script>
+</body>
+
+</html>

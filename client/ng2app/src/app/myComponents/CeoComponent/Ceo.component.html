@@ -1,0 +1,30 @@
+
+<div *ngFor="let alert of alerts">
+    <alert [type]="alert.type" [dismissOnTimeout]="alert.timeout">{{ alert.msg }}</alert>
+</div>
+
+
+<div>
+  <div class="card card-accent-warning">
+    <div class="card-header">
+      <strong> Ceo</strong> Form
+      <div class="card-actions">
+        <a  href="/components" class="btn-close"><i class="icon-close"></i></a>
+      </div>
+  </div>
+  <div class="card-block">
+    <form class="form-horizontal">
+      <div class="container">
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="name">NAME</label>
+          <div class="col-md-10">
+            <input class="form-control" type="string"     id="name" name="name"   [(ngModel)]="ceo.name" placeholder="NAME" />
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="card-footer">
+    <button type="submit"  (click)="addCeo()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+     <script type="text/javascript">
+    RED.nodes.registerType('output_console',{
+        category: 'output',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"Output-Console"},
+            data: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "file.png",
+        label: function() {
+            return this.name||"output_console";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="output_console">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name"> <br />
+        <label for="node-input-data"><i class="icon-tag"></i> Message :</label>
+        <input type="text" id="node-input-data" placeholder="data"> <br />
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="output_console">
+    <p>
+        Console output display the message send data to output port taken from its input ports or through its form input.<br />
+        e.g.<br />
+        someone wants to send his/her own message when some event performed.<br />
+        var message = "any message here";<br />
+        and this message recieved on its out-ports;<br />
+    </p>
+</script>

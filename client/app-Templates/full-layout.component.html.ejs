@@ -1,0 +1,67 @@
+    <header class="app-header navbar">
+    <button class="navbar-toggler d-lg-none" type="button" appMobileSidebarToggler>&#9776;</button>
+    <a class="navbar-brand" href="/components"></a>
+    <ul class="nav navbar-nav d-md-down-none">
+        <li class="nav-item">
+            <a class="nav-link navbar-toggler" href="/components" appSidebarToggler>&#9776;</a>
+        </li>
+        <li class="nav-item px-3">
+            <a class="nav-link" href="/components">Angular 2 App</a>
+        </li>
+    </ul>
+     <ul class="nav navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+            <a href (click)="logOut()" class="nav-link "> Logout
+            </a>
+        </li>
+    </ul>
+     
+</header>
+
+<div class="app-body">
+    <div style=" height: 100vh ; overflow: scroll;" class="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" routerLinkActive="active"><i class="icon-speedometer"></i> Angular 2 App <span class="badge badge-info">{{user.user.role}}</span></a>
+                </li>
+                <li class="divider"></li>
+                <li class="nav-title">
+                    UI Elements
+                </li>
+                
+                <li class="nav-item nav-dropdown" routerLinkActive="open" appNavDropdown>
+                    <a class="nav-link nav-dropdown-toggle" href="#" appNavDropdownToggle><i class="fa fa-pencil-square-o"></i>Components</a>
+                    <ul class="nav-dropdown-items"> <% for (var count = 0 ; count <  model_schema.length ; count++){for(var check =0 ;check < relation_schema.length; check++){ if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.createOperation == true){%>
+                         <li ><a class="nav-link" routerLinkActive="active" [routerLink]="['/components', {outlets: {home: '<%= model_schema[count].name.toLowerCase() %>'}}]"><%= model_schema[count].name %></a></li><%}if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.readOperation == true){%>
+                         <li ><a class="nav-link" routerLinkActive="active" [routerLink]="['/components', {outlets: {home: '<%= model_schema[count].name.toLowerCase()  %>Listing'}}]"><%= model_schema[count].name %> Listing</a></li> <% }}}%>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main content -->
+    <main class="main">
+
+        <!-- Breadcrumb -->
+        <ol class="breadcrumb">
+            <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+                <app-breadcrumbs></app-breadcrumbs>
+            </div>
+
+        </ol>
+
+        <div class="container-fluid">
+            <router-outlet  name="home"></router-outlet>
+        </div>
+        <!-- /.conainer-fluid -->
+    </main>
+
+
+</div>
+
+<footer class="app-footer">
+    <a href="">MEAN</a> &copy; 2017 All Right Reserved.
+    <span class="float-right">Powered by <a href="">MEAN</a></span>
+</footer>

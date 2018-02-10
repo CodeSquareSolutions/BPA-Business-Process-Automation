@@ -1,0 +1,56 @@
+<%var hasMany = [] ,hasManyParams =[] , hasManyPaths = [] , belongsTo = [] ;
+for (var count = 0 ;count < lb_relation.length ; count++){
+ lb_relation[count].name =  lb_relation[count].name.charAt(0).toUpperCase() +  lb_relation[count].name.slice(1); 
+ lb_relation[count].relations.model =  lb_relation[count].relations.model.charAt(0).toUpperCase() +  lb_relation[count].relations.model.slice(1);
+}
+for (var count = 0 ;count < lb_relation.length ; count++){
+  for (var check=0 ; check< relation_schema.length ; check++){
+    if ((relation_schema[check].modelName == lb_relation[count].name.toLowerCase()) && relation_schema[check].operations.readOperation == true){
+      for (var counter = 0 ;counter < relation_schema.length ; counter++){
+        if (relation_schema[counter].operations.readOperation==true && relation_schema[counter].modelName.toLowerCase() == lb_relation[count].relations.model.toLowerCase()){
+          if ((lb_relation[count].relations.type == "belongsTo") || (lb_relation[count].relations.type == "hasOne")){
+                belongsTo.push(lb_relation[count]);
+          } 
+          if (lb_relation[count].relations.type == "hasMany"  && !("through" in lb_relation[count].relations)){
+          
+              hasMany.push(lb_relation[count]);
+          }
+        }
+      }
+    }
+  }
+}
+for (var i=0 ; i< hasMany.length ; i++){ for (var j=0 ;j< model_schema.length ; j++){
+  if ( (hasMany[i].relations.type == "hasMany" && hasMany[i].relation_name.toLowerCase() == model_schema[j].name.toLowerCase()) || ( (hasMany[i].relation_name.toLowerCase()).slice(0, -1) == model_schema[j].name.toLowerCase() )){
+    hasManyPaths.push({"path" : hasMany[i].relation_name , "component" :model_schema[j].name  , "rel_with" : hasMany[i].relations.model});
+    hasManyParams.push({"rel_from" : hasMany[i].name , "rel_with" : hasMany[i].relations.model})
+}}}%>
+import { FullLayoutComponent } from './full-layout.component';
+import { AuthGuardService } from './shared/sdk/services/core/auth-guard';
+import {ModuleWithProviders} from '@angular/core';
+import {NgModule} from "@angular/core";
+import {Routes, RouterModule} from '@angular/router';
+import { LoginComponent } from './myComponents/login/login';
+import { RegisterComponent } from './myComponents/signup/signup';
+
+<% for (var count = 0 ; count <  model_schema.length ; count++){for (var check=0 ; check< relation_schema.length ; check++){if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.createOperation == true){%>
+  import { <%= model_schema[count].name %>Component } from './myComponents/<%= model_schema[count].name %>Component/<%= model_schema[count].name%>.component';<%}  if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.readOperation == true){%>
+  import { <%= model_schema[count].name %>ComponentListing } from './myComponents/<%= model_schema[count].name %>ListingComponent/<%= model_schema[count].name%>.listing.component';
+ <%}}}%>
+
+const appRoutes: Routes = [
+     {path : '' , component:LoginComponent},
+     {path : 'signup' , component:RegisterComponent },
+     { path: 'components', component: FullLayoutComponent, canActivate: [ AuthGuardService ] ,
+     children: [<% for (var count = 0 ; count <  model_schema.length ; count++){for (var check=0 ; check< relation_schema.length ; check++){if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.createOperation == true){%>
+     {path : '<%= model_schema[count].name.toLowerCase() %>' , component:<%= model_schema[count].name %>Component ,outlet: 'home', canActivate: [ AuthGuardService ]},<%} if ((relation_schema[check].modelName == model_schema[count].name.toLowerCase()) && relation_schema[check].operations.readOperation == true){%>
+     {path : '<%= model_schema[count].name.toLowerCase() %>Listing' , component:<%= model_schema[count].name %>ComponentListing ,outlet: 'home', canActivate: [ AuthGuardService ]},<%}}}for (var i=0 ; i< hasManyPaths.length ; i++){%>
+     {path : '<%= hasManyPaths[i].path %>Listings<% for (var j=0 ; j< hasManyParams.length ; j++){if (hasManyPaths[i].rel_with == hasManyParams[j].rel_with){%>/:<%= hasManyParams[j].rel_from.toLowerCase()%>Id<%}}%>/:modelName' , component:<%= hasManyPaths[i].component %>ComponentListing ,outlet: 'home', canActivate: [ AuthGuardService ]} ,<%}for (var i=0 ; i< belongsTo.length ; i++){ %> 
+     {path : '<%= belongsTo[i].relations.model.toLowerCase() %>Listing/:<%= belongsTo[i].relations.model.toLowerCase() %>Id' , component:<%= belongsTo[i].relations.model %>ComponentListing ,outlet: 'home', canActivate: [ AuthGuardService ]},<%}%>
+     // otherwise redirect to home
+    { path: '**', redirectTo: '' }
+    ]
+    }
+];
+//export class routing {}
+export const routing = RouterModule.forRoot(appRoutes);

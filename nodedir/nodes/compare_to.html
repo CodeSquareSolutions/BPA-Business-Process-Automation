@@ -1,0 +1,39 @@
+     <script type="text/javascript">
+    RED.nodes.registerType('compare_to',{
+        category: 'Compare',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"Compare to"},
+            compare: {value:""},
+            operator: {value:""}
+        },
+        inputs:1,
+        outputs:2,
+        icon: "file.png",
+        label: function() {
+            return this.name||"compare_to";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="compare_to">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name"> <br /><br />
+        <label for="node-input-compare"><i class="icon-tag"></i> Compare to :</label>
+        <input type="text" id="node-input-compare" placeholder="compare to"> <br /><br />
+        <label for="node-input-operator"><i class="icon-tag"></i> Operator : </label>
+        <input type="text" id="node-input-operator" placeholder="operator"> <br /><br />
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="compare_to">
+    <p>
+        Compare values one from flow and other from form input in settings.<br />
+        value in compare is of any type (string, number, decimal, boolean).<br />
+        Following Comparison operators are allowed ( == , != , < , > , <= , >= ).<br /><br />
+        return =><br />
+            - if values matched success output port engaged.<br />
+            - if value not matched error port engaged.<br />
+    </p>
+</script>

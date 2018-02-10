@@ -1,0 +1,114 @@
+
+<div *ngFor="let alert of alerts">
+    <alert [type]="alert.type" [dismissOnTimeout]="alert.timeout">{{ alert.msg }}</alert>
+</div>
+
+
+<div>
+  <div class="card card-accent-warning">
+    <div class="card-header">
+      <strong> Applicant</strong> Form
+      <div class="card-actions">
+        <a href="/components"  class="btn-close"><i class="icon-close"></i></a>
+      </div>
+    </div>
+    <div class="card-block">
+      <form class="form-horizontal" >
+        <div class="form-group row">
+          <label class="col-md-2 form-control-label" for="applicantname">Applicant</label>
+          <div class="col-md-10">
+            <input class="form-control" type="text"     id="applicantname" name="applicantname" required  [(ngModel)]="applicant.applicantname" placeholder="Applicant">
+          </div>
+        </div>   
+        <div class="container ">
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i>  <strong>  Leaves </strong>
+            </div>
+          </div>
+          <div class="card-block">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>SUBJECT</th>
+                  <th>APPROVEDBYSUPERVISOR</th>
+                  <th>APPROVEDBYCEO</th>
+                  <th>STATUS</th>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let list of leaveArray ">
+                  <td>{{list.subject}}</td>
+                  <td>{{list.approvedbysupervisor}}</td>
+                  <td>{{list.approvedbyceo}}</td>
+                  <td>{{list.status}}</td>
+                  <td  ><span class="badge badge-danger" ><i (click)="removeLeave(leave)"  class="fa fa-trash-o"></i></span></td>
+                </tr>
+              </tbody>                 
+            </table>
+          </div>
+          <div class="card-footer">
+            <button  type="button"  class="btn btn-success" (click)="modalleave.show()">Add</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="card-footer">
+      <button type="submit" (click)="createApplicants()" class="btn btn-sm btn-primary"><i class="fa fa-dot-circle-o"></i> Submit</button>
+    </div> 
+  </div>
+  <!--modal for leave relations-->
+  <div bsModal #modalleave="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-success" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"><strong>Applicant</strong> Info Add</h4>
+          <button type="button" class="close" (click)="modalleave.hide()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="card">
+            <div class="card-header">
+              <i class="fa fa-align-justify"></i>   <strong>Leaves </strong>
+            </div>
+            <div class="card-block">
+              <form class="form-horizontal">
+                <div class="form-group row">
+                  <label class="col-md-2 form-control-label" for="subject">SUBJECT</label>
+                  <div class="col-md-10">
+                    <input class="form-control" type="string"      id="subject" name="subject"  [(ngModel)]="leave.subject" placeholder="SUBJECT">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-md-2 form-control-label" for="approvedbysupervisor">APPROVEDBYSUPERVISOR</label>
+                  <div class="col-md-10">
+                    <input class="form-control" type="boolean"      id="approvedbysupervisor" name="approvedbysupervisor"  [(ngModel)]="leave.approvedbysupervisor" placeholder="APPROVEDBYSUPERVISOR">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-md-2 form-control-label" for="approvedbyceo">APPROVEDBYCEO</label>
+                  <div class="col-md-10">
+                    <input class="form-control" type="boolean"      id="approvedbyceo" name="approvedbyceo"  [(ngModel)]="leave.approvedbyceo" placeholder="APPROVEDBYCEO">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-md-2 form-control-label" for="status">STATUS</label>
+                  <div class="col-md-10">
+                    <input class="form-control" type="string"      id="status" name="status"  [(ngModel)]="leave.status" placeholder="STATUS">
+                  </div>
+                </div>
+                <br />
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="modalleave.hide()">Close</button>
+          <button type="button" class="btn btn-success"  (click)="modalleave.hide()" (click)="addLeaveHasManyInThrough()">Add</button>
+        </div>
+      </div>
+    <!-- /.modal-content -->
+    </div>
+  </div>
+  <!-- /.modal-dialog -->
+</div>

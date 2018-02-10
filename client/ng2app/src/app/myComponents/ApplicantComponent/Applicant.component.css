@@ -1,0 +1,15 @@
+
+.selected {
+    border: solid lightskyblue 1px;
+    border-radius: 7px;
+    float: left;
+    margin: 2px;
+    padding: 2px 15px;
+}
+
+.selected a {
+    color: red;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: bold;
+}

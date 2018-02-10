@@ -1,0 +1,60 @@
+<script type="text/javascript">
+    RED.nodes.registerType('lb_operation_hooks', {
+      category: 'Lb_Hooks',
+      color: '#a6bbcf',
+      defaults: {
+        name: {value:"Operation hook"},
+        model: {
+          value: ""
+        },
+        hook:{
+          value : ""
+        }
+      },
+      inputs: 0,
+      outputs: 2,
+      icon: "file.png",
+      label: function () {
+        return this.name || "lb_operation_hooks";
+      }
+    });
+  
+  </script>
+  
+  <script type="text/x-red" data-template-name="lb_operation_hooks">
+    <div class="form-row">
+      <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+      <input type="text" id="node-input-name" placeholder="name"> <br /><br />
+      <label for="node-input-name"><i class="icon-tag"></i> Model : </label>
+      <input type="text" id="node-input-model" placeholder="Model"><br /><br />
+      <label for="node-input-hook"><i class="icon-tag"></i> Hook : </label>      
+      <select id="node-input-hook">
+          <option value="access">access</option>
+          <option value="before save">before save</option>
+          <option value="after save">after save</option>
+          <option value="before delete">before delete</option>
+          <option value="before delete">before delete</option>
+          <option value="after delete">after delete</option>
+          <option value="persist">persist</option>
+          <option value="loaded">loaded</option>
+        </select>
+  
+    </div>
+  </script>
+  
+  <script type="text/x-red" data-help-name="lb_operation_hooks">
+    <p>loopback-operation-hooks used to do something when a model performs a specific operation..<br />
+    Model.observe(name, observer) <br />
+    returns :- function observer(context, callback) <br />
+    input => <br />
+          - valid model name (case sensitive).<br />
+          - valid operation hook.<br />
+    output =><br />
+          - number of output is 2
+            1 output with ctx object of hook. <br />
+            2 error. <br />
+          - ctx.instance {object} (This property is provided when the operation affects a single instance and performs a full update/create/delete of all model properties).<br />
+          - see loopback docs for more information.<br />
+    </p>
+  </script>
+  

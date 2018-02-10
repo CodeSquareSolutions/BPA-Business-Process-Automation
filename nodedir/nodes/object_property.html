@@ -1,0 +1,35 @@
+<script type="text/javascript">
+    RED.nodes.registerType('fetch_property',{
+        category: 'Object_Operations',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"fetch-property"},
+            compare: {value:""},
+            operator: {value:""},
+            selector:{value : ""}
+        },
+        inputs:1,
+        outputs:2,
+        icon: "file.png",
+        label: function() {
+            return this.name||"fetch-property";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="fetch_property">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name"> <br />
+        <label for="node-input-selector"><i class="icon-tag"></i> Selector : </label>
+        <input type="text" id="node-input-selector" placeholder="selector"> <br />
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="object_property">
+    <p>
+        Object property node is used to get selected property from an object.<br />
+        selector is the property which returned after getting from object, 
+        property type can not effect output.
+    </p>
+</script>
